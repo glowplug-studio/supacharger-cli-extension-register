@@ -1,8 +1,8 @@
 {
   "modules": [
     {
-      "name": "brevo-newsletter",
-      "github_repo_url": "git@github.com:glowplug-studio/supacharger-ext-brevo-newsletter.git"
+      "name": "supacharger-ext-brevo",
+      "github_repo_url": "git@github.com:glowplug-studio/supacharger-ext-brevo.git"
     }
   ]
 }
