@@ -1,6 +1,18 @@
 {
   "schemaVersion": 1,
-  "modules": [
+  "core": {
+    "name": "supacharger",
+    "github_repo_url": "https://github.com/glowplug-studio/supacharger.git",
+    "version": null,
+    "source_commit": null,
+    "checksum": {
+      "algorithm": "sha256",
+      "format": "sc-source-tree-v1",
+      "value": null
+    },
+    "dependencies": []
+  },
+  "extensions": [
     {
       "name": "supacharger-ext-brevo",
       "github_repo_url": "git@github.com:glowplug-studio/supacharger-ext-brevo.git",
