@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 2,
+  "name": "supacharger",
+  "github_repo_url": "https://github.com/glowplug-studio/supacharger.git",
+  "version": "0.0.1-alpha",
+  "source_commit": "c57960d53d5ea82ed1b3e08aa1cd091bfd404b33",
+  "dependencies": [],
+  "archive_checksum": {
+    "algorithm": "sha256",
+    "format": "zip",
+    "value": "1924742ef015d5a8723e9da65c1e4fb63b893ff96bde6c73e7a8b433e5c1d4cc"
+  },
+  "version_history": {},
+  "download_url": "https://github.com/glowplug-studio/supacharger/archive/refs/tags/v0.0.1-alpha.zip"
+}

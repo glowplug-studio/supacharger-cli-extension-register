@@ -1,16 +1,16 @@
-# Supacharger extension register
+# Supacharger Extension Register
 
 This repository lists Supacharger core and extensions by their registry name, for example `supacharger-ext-brevo`.
 
-The [manifest.json registry](https://github.com/glowplug-studio/supacharger-cli-extension-register/blob/main/manifest.json) is the route to check the existence, versions, source download paths (`github_repo_url`), purchase URLs (`sellsource_url`) and checksums of Supacharger core and extensions. For programmatic access, use the [raw JSON](https://raw.githubusercontent.com/glowplug-studio/supacharger-cli-extension-register/main/manifest.json).
+The [manifest.json registry](https://github.com/glowplug-studio/supacharger-cli-extension-register/blob/main/manifest.json) is the route to check the existence, versions, source download paths (`github_repo_url`), download URLs for licence-gated extensions (`sellsource_url`) and checksums of Supacharger core and extensions. For programmatic access, use the [raw JSON](https://raw.githubusercontent.com/glowplug-studio/supacharger-cli-extension-register/main/manifest.json).
 
-Paid extensions are provided through [sellsource.io](https://sellsource.io). If an extension has no `github_repo_url`, it is a paid extension and its package must be purchased through the registry's `sellsource_url`.
+Licence-gated extensions are available through [sellsource.io](https://sellsource.io?ref=gh-sc-extension-register). When `requires_license` is `true`, a valid licence is required to download the extension through its `sellsource_url`.
 
-Monetise your own private repository with [sellsource.io](https://sellsource.io).
+Monetise your own private repository with [sellsource.io](https://sellsource.io?ref=gh-sc-extension-register).
 
 ## Get Supacharger core
 
-![Supacharger](saas.webp)
+[![Supacharger](sc-banner.webp)](https://supacharger.dev?ref=gh-sc-extension-register)
 
 Download or clone core from the [Supacharger repository](https://github.com/glowplug-studio/supacharger):
 
@@ -20,46 +20,50 @@ git clone https://github.com/glowplug-studio/supacharger.git
 
 ## Build with Specdrive
 
-Develop Supacharger apps with [specdrive.dev](https://specdrive.dev), the anti-vibe-coding platform for enterprises and serious developers. Bring rigour to agentic development with specification design, architecture decision records (ADRs) and an audit trail. Write specifications, not code, to build and maintain your apps.
+Develop Supacharger apps with [specdrive.dev](https://specdrive.dev?ref=gh-sc-extension-register), the anti-vibe-coding platform for enterprises and serious developers. Bring rigour to agentic development with specification design, architecture decision records (ADRs) and an audit trail. Write specifications, not code, to build and maintain your apps.
 
 ## Release record structure
 
-The manifest contains top-level `schemaVersion: 1`, a `core` object and an `extensions` array. `extensions` replaces the former `modules` key; consuming CLIs must support this structure before using the manifest with `--registry` to install reviewed local release source. Each release entry has:
+`manifest.json` lists core and extensions by `name` and `path`. Paths are relative to the manifest. Each package file contains its current release and `version_history`.
 
 | Field | Content |
 | --- | --- |
+| schemaVersion | Version of the JSON structure of these files, separate from the package release version |
 | name | Registry name matching the bundle |
-| github_repo_url | Source repository URL used to download or clone the source; absent for paid extensions |
-| sellsource_url | Sellsource purchase URL; required for paid extensions that have no `github_repo_url` |
-| version | Three integers, such as 4.0.0 |
+| github_repo_url | Source repository URL, where available |
+| requires_license | Extension download requires a valid licence when `true`; no download licence is required when `false` |
+| download_url | ZIP download URL for the specific core release, or `null` when not specified |
+| sellsource_url | URL for downloading a licence-gated extension through Sellsource |
+| version | Release version, such as `4.0.0` or `0.0.1-alpha` |
 | source_commit | Exact full Git commit ID |
-| checksum | algorithm: sha256; format: sc-source-tree-v1; value: source digest |
-| dependencies | Array of required extension registry names; empty for Brevo |
+| archive_checksum | Downloaded ZIP checksum: algorithm `sha256`, format `zip`, value: SHA-256 hash of the original ZIP, or `null` when unavailable |
+| dependencies | Registry names of extensions this extension requires to function, regardless of provider choice. An empty array means no extensions are required. |
+| core_services | Core services this extension requires, such as `auth` or `transactional_email`. Providers are selected in `SC_CONFIG.CORE_SERVICES`. An empty array means no core services are required. |
+| version_history | Previous release records keyed by version; excludes the current release and contains no nested histories |
 
-The core record currently has `null` values for `version`, `source_commit` and checksum `value`: no verified core release is registered yet. It cannot be verified until those fields are populated. Repository URLs provide source access; they are not version-specific release archive URLs.
+Invitations requires `transactional_email`. The application’s `SC_CONFIG.CORE_SERVICES.transactional_email.provider` identifies its selected provider, such as `supacharger-ext-brevo`. `dependencies` identifies specific extensions required independently of that selection.
 
-Each snapshot contains one version per registry name. Verification of an older release requires its matching registry record. `provider_dependencies` maps a config field to the dependencies of its selected provider. Invitations defaults to `emailProvider: brevo`; only that provider’s registry names are required. The installed developer config takes precedence on updates.
+## Verify downloaded ZIPs
 
-## Source checksum
+A SHA-256 checksum lets you check that a downloaded ZIP matches the registered release. This works for developers and agents downloading through the CLI or Sellsource, provided they receive the same original release ZIP.
 
-The registry uses **SHA-256 hashing**, not encryption, to check that source files match the registered release. `checksum.value` is a lowercase hexadecimal digest of the complete committed source tree, using the `sc-source-tree-v1` format. It is neither the checksum of a downloaded ZIP nor the Git commit ID. A match establishes consistency with the registry record; it is not a digital signature.
+1. Follow your package’s `path` in the registry and select the matching version in its file, using `version_history` for an older release. Use its `archive_checksum.value`, with algorithm `sha256` and format `zip`.
+2. Calculate the SHA-256 hash of your downloaded ZIP **before extracting it**. Replace `package.zip` below with your filename.
+3. Compare the result with `archive_checksum.value`. The hashes must match (letter case does not matter). If they differ, do not install the package.
 
-To verify a release, a client or agent follows these steps:
-
-1. Select the record matching the package name and version. Require `checksum.algorithm: sha256`, `checksum.format: sc-source-tree-v1`, a complete `source_commit` and a populated checksum value.
-2. Obtain the source repository containing that exact commit. Enumerate its files with `git ls-tree -rz --full-tree <source_commit>`. Only regular Git blobs with mode `100644` or `100755` are supported. Reject symlinks, submodules, Git LFS pointers, invalid UTF-8 paths, backslashes, absolute paths, empty/`.`/`..` path components and paths that collide when lowercased.
-3. Read each blob's exact bytes with `git cat-file blob <object-id>` and compute its SHA-256 digest. Do not normalise whitespace or line endings. Build one record per file: `[relativePath, mode, lowercaseHexDigest]`, where the mode is a string.
-4. Sort the records by their paths' UTF-8 bytes, then calculate the source-tree digest using the JavaScript expression below. Compare it exactly with `checksum.value`.
-5. Verify the actual files to be installed: each recorded path must exist, its bytes must produce the same per-file digest, and its executable status must match the recorded mode. Require `extension.json` and every declared payload source to appear in the verified inventory. A matching committed tree alone does not verify modified working files or additional payload files.
-
-```js
-import { createHash } from 'node:crypto';
-
-// records contains [relativePath, mode, lowercaseHexDigest] for every Git blob.
-records.sort((a, b) => Buffer.compare(Buffer.from(a[0], 'utf8'), Buffer.from(b[0], 'utf8')));
-const checksum = createHash('sha256')
-  .update('sc-source-tree-v1\n' + JSON.stringify(records) + '\n', 'utf8')
-  .digest('hex');
+**macOS:**
+```sh
+shasum -a 256 package.zip
 ```
 
-Any mismatch means the supplied source has not passed verification. A paid package needs the same source inventory and commit data to use this verification method; an archive alone cannot be checked by comparing its file hash with the source-tree checksum.
+**Linux:**
+```sh
+sha256sum package.zip
+```
+
+**Windows PowerShell:**
+```powershell
+Get-FileHash .\package.zip -Algorithm SHA256
+```
+
+Hash the original download, not a folder or a ZIP you recreate yourself. Repacking the same source files can change the ZIP hash. A match confirms agreement with the registry, not that the code is safe or that its publisher is authentic. SHA-256 is hashing, not encryption or a digital signature.
