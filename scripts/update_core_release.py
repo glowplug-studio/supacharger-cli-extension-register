@@ -14,11 +14,11 @@ REPO = 'glowplug-studio/supacharger'
 ASSET = 'supacharger.zip'
 
 
-def request(path, binary=False):
+def request(path, binary=False, repo=REPO):
     headers = {'Authorization': 'Bearer ' + os.environ['SC_RELEASE_TOKEN'],
                'Accept': 'application/octet-stream' if binary else 'application/vnd.github+json',
                'X-GitHub-Api-Version': '2022-11-28', 'User-Agent': 'supacharger-registry'}
-    req = urllib.request.Request('https://api.github.com/repos/' + REPO + '/' + path, headers=headers)
+    req = urllib.request.Request('https://api.github.com/repos/' + repo + '/' + path, headers=headers)
     # urllib strips neither arbitrary headers nor credentials on cross-host redirects.
     # Release asset redirects must therefore be followed without the API token.
     class NoRedirect(urllib.request.HTTPRedirectHandler):
