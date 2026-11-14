@@ -10,6 +10,10 @@
       "path": "extensions/supacharger-ext-brevo.json"
     },
     {
+      "name": "supacharger-ext-installation-report",
+      "path": "extensions/supacharger-ext-installation-report.json"
+    },
+    {
       "name": "supacharger-ext-invitations",
       "path": "extensions/supacharger-ext-invitations.json"
     },
